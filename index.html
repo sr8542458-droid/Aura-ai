@@ -1,0 +1,1559 @@
+```html
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AuraAI</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown & Highlight.js for Code Syntax -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        gpt: {
+                            dark: '#171717',
+                            main: '#212121',
+                            surface: '#2f2f2f',
+                            border: '#383838',
+                            hover: '#2a2a2a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom Subtle Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.25);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.45);
+        }
+
+        /* Clean ChatGPT/Gemini Typography */
+        .prose-aura {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            word-break: break-word;
+        }
+        .prose-aura p {
+            margin-bottom: 1rem;
+        }
+        .prose-aura p:last-child {
+            margin-bottom: 0;
+        }
+        .prose-aura ul, .prose-aura ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .prose-aura ul {
+            list-style-type: disc;
+        }
+        .prose-aura ol {
+            list-style-type: decimal;
+        }
+        .prose-aura li {
+            margin-bottom: 0.35rem;
+        }
+        .prose-aura h1, .prose-aura h2, .prose-aura h3, .prose-aura h4 {
+            font-weight: 600;
+            margin-top: 1.4rem;
+            margin-bottom: 0.6rem;
+            line-height: 1.35;
+        }
+        .prose-aura h1 { font-size: 1.4rem; }
+        .prose-aura h2 { font-size: 1.2rem; }
+        .prose-aura h3 { font-size: 1.05rem; }
+        .prose-aura code:not(pre code) {
+            background: rgba(148, 163, 184, 0.18);
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.375rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+        }
+        .prose-aura pre {
+            margin: 1rem 0;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: #0d0d0d !important;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .prose-aura pre code {
+            display: block;
+            padding: 1rem;
+            overflow-x: auto;
+            font-size: 0.84rem;
+            line-height: 1.6;
+        }
+        .prose-aura blockquote {
+            border-left: 3px solid #6366f1;
+            padding-left: 1rem;
+            margin: 1rem 0;
+            opacity: 0.85;
+        }
+        .prose-aura table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.88rem;
+        }
+        .prose-aura th, .prose-aura td {
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+        }
+        .prose-aura th {
+            background: rgba(148, 163, 184, 0.1);
+            font-weight: 600;
+        }
+
+        /* Gemini / ChatGPT Sparkle Pulse */
+        @keyframes subtlePulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        .thinking-dot {
+            animation: subtlePulse 1.4s infinite ease-in-out;
+        }
+
+        /* Shimmering AI Image Generation Loader (ChatGPT / Gemini Style) */
+        @keyframes imageShimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .img-gen-shimmer {
+            background: linear-gradient(110deg, #1f1f23 25%, #2d2d35 50%, #1f1f23 75%);
+            background-size: 200% 100%;
+            animation: imageShimmer 2s infinite linear;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden bg-white dark:bg-gpt-main text-neutral-900 dark:text-neutral-100 flex flex-col select-none transition-colors duration-200">
+
+    <!-- Subtle Toast Container -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-xs w-full pointer-events-none"></div>
+
+    <!-- Main Layout -->
+    <div class="flex flex-1 h-full overflow-hidden relative">
+
+        <!-- Mobile Backdrop -->
+        <div id="sidebarBackdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-xs transition-opacity"></div>
+
+        <!-- LEFT SIDEBAR (ChatGPT Minimalist Style) -->
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-[260px] bg-neutral-100 dark:bg-gpt-dark border-r border-neutral-200/80 dark:border-white/5 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-out shrink-0">
+            
+            <!-- Sidebar Top Actions -->
+            <div class="p-3 flex items-center justify-between gap-2">
+                <button onclick="createNewChat()" class="flex-1 flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-neutral-200/70 dark:hover:bg-gpt-hover text-sm font-medium transition group">
+                    <div class="w-7 h-7 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center shadow-xs">
+                        <i class="fa-solid fa-sparkles text-xs"></i>
+                    </div>
+                    <span>New chat</span>
+                    <i class="fa-regular fa-pen-to-square ml-auto text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-neutral-200 text-xs"></i>
+                </button>
+                <button onclick="toggleSidebar(false)" class="md:hidden p-2.5 rounded-xl text-neutral-500 hover:bg-neutral-200/60 dark:hover:bg-gpt-hover">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Search Conversations -->
+            <div class="px-3 mb-2">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                    <input id="chatSearchInput" type="text" placeholder="Search chats..." oninput="renderChatHistorySidebar()"
+                        class="w-full bg-neutral-200/60 dark:bg-gpt-main border border-transparent focus:border-neutral-300 dark:focus:border-neutral-700 rounded-xl pl-8 pr-3 py-1.5 text-xs placeholder-neutral-500 focus:outline-none transition">
+                </div>
+            </div>
+
+            <!-- Chat History List -->
+            <div class="flex-1 overflow-y-auto px-2 py-1 space-y-0.5" id="chatHistoryList"></div>
+
+            <!-- Bottom User / Preferences Bar -->
+            <div class="p-2.5 border-t border-neutral-200/80 dark:border-white/5 space-y-1">
+                <button onclick="openPersonaModal()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-neutral-200/70 dark:hover:bg-gpt-hover text-xs font-medium text-neutral-700 dark:text-neutral-300 transition">
+                    <i class="fa-solid fa-sliders w-4 text-center text-neutral-400"></i>
+                    <span class="truncate">Custom instructions</span>
+                    <span id="activePersonaBadge" class="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 dark:bg-gpt-surface text-neutral-600 dark:text-neutral-300">Default</span>
+                </button>
+
+                <div class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-neutral-200/70 dark:hover:bg-gpt-hover transition">
+                    <div class="flex items-center gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                        <i class="fa-solid fa-moon w-4 text-center text-neutral-400"></i>
+                        <span>Appearance</span>
+                    </div>
+                    <button onclick="toggleTheme()" id="themeToggleBtn" class="px-2.5 py-1 rounded-lg bg-neutral-200 dark:bg-gpt-surface text-[11px] font-medium text-neutral-700 dark:text-neutral-200">
+                        Dark
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER CONVERSATION AREA -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+            
+            <!-- Minimalist Header (Like ChatGPT / Gemini) -->
+            <header class="h-14 px-3 sm:px-5 flex items-center justify-between shrink-0 z-20">
+                <div class="flex items-center gap-2">
+                    <!-- Mobile Menu Toggle -->
+                    <button onclick="toggleSidebar(true)" class="md:hidden p-2 rounded-xl text-neutral-500 hover:bg-neutral-100 dark:hover:bg-gpt-surface transition">
+                        <i class="fa-solid fa-bars text-base"></i>
+                    </button>
+
+                    <!-- Clean Model Dropdown Trigger -->
+                    <div class="relative">
+                        <button onclick="toggleModelDropdown(event)" id="modelDropdownBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-gpt-surface text-sm font-semibold text-neutral-800 dark:text-neutral-100 transition">
+                            <span id="selectedModelLabel">Aura Pro</span>
+                            <i class="fa-solid fa-chevron-down text-[11px] text-neutral-400"></i>
+                        </button>
+
+                        <!-- Model Picker Popover Menu -->
+                        <div id="modelDropdownMenu" class="hidden absolute left-0 mt-1.5 w-72 rounded-2xl bg-white dark:bg-gpt-surface border border-neutral-200 dark:border-white/10 shadow-2xl py-2 z-50">
+                            <div class="px-3 py-1 text-[11px] font-medium text-neutral-400">Model</div>
+                            <div id="curatedModelsList" class="space-y-0.5 px-1.5"></div>
+                            <div class="my-1.5 border-t border-neutral-100 dark:border-white/10"></div>
+                            <div class="px-3 py-1 text-[11px] font-medium text-neutral-400">More models</div>
+                            <div id="extraModelsList" class="max-h-44 overflow-y-auto space-y-0.5 px-1.5"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Header Buttons -->
+                <div class="flex items-center gap-1.5">
+                    <button onclick="createNewChat()" title="New Chat" class="p-2 rounded-xl text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-gpt-surface transition">
+                        <i class="fa-regular fa-pen-to-square text-sm"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Scroll Area -->
+            <div id="chatScrollContainer" class="flex-1 overflow-y-auto px-4 sm:px-6 select-text">
+                
+                <!-- EMPTY STATE / WELCOME SCREEN (Centered like ChatGPT & Gemini) -->
+                <div id="welcomeScreen" class="min-h-full flex flex-col items-center justify-center max-w-2xl mx-auto py-8 text-center">
+                    <div class="w-12 h-12 rounded-2xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center shadow-md mb-5">
+                        <i class="fa-solid fa-sparkles text-xl"></i>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white mb-2">
+                        How can I help you today?
+                    </h1>
+                    <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-8 max-w-md">
+                        Ask anything, create HD AI images, analyze photos, or build complete websites in one conversation.
+                    </p>
+
+                    <!-- 4 Minimalist Suggestion Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full text-left">
+                        <button onclick="runQuickImagePrompt('Create a hyper-realistic 8k cinematic portrait of a majestic futuristic samurai standing in a neon-lit cyberpunk Tokyo street during rain')" class="p-3.5 rounded-2xl border border-neutral-200 dark:border-white/10 hover:bg-neutral-50 dark:hover:bg-gpt-surface/70 transition group">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-medium text-neutral-800 dark:text-neutral-200">Create an AI image</span>
+                                <i class="fa-solid fa-wand-magic-sparkles text-xs text-neutral-400 group-hover:text-pink-400 transition"></i>
+                            </div>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">Generate HD art, photos, logos & wallpapers</p>
+                        </button>
+
+                        <button onclick="runQuickPrompt('Create a complete, modern calculator and unit converter web app with dark glassmorphism UI in a single HTML file.')" class="p-3.5 rounded-2xl border border-neutral-200 dark:border-white/10 hover:bg-neutral-50 dark:hover:bg-gpt-surface/70 transition group">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-medium text-neutral-800 dark:text-neutral-200">Build a complete website</span>
+                                <i class="fa-solid fa-code text-xs text-neutral-400 group-hover:text-indigo-400 transition"></i>
+                            </div>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">Generate HTML/CSS/JS with live preview</p>
+                        </button>
+
+                        <button onclick="triggerImageSelect()" class="p-3.5 rounded-2xl border border-neutral-200 dark:border-white/10 hover:bg-neutral-50 dark:hover:bg-gpt-surface/70 transition group">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-medium text-neutral-800 dark:text-neutral-200">Analyze a photo</span>
+                                <i class="fa-regular fa-image text-xs text-neutral-400 group-hover:text-emerald-400 transition"></i>
+                            </div>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">Upload any screenshot, photo, or document</p>
+                        </button>
+
+                        <button onclick="runQuickPrompt('Explain how satellites stay in orbit without falling back to Earth in simple, easy-to-understand Hinglish with examples.')" class="p-3.5 rounded-2xl border border-neutral-200 dark:border-white/10 hover:bg-neutral-50 dark:hover:bg-gpt-surface/70 transition group">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-medium text-neutral-800 dark:text-neutral-200">Ask anything</span>
+                                <i class="fa-regular fa-lightbulb text-xs text-neutral-400 group-hover:text-amber-400 transition"></i>
+                            </div>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">Smart answers in English, Hindi, or Hinglish</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CONVERSATION MESSAGES STREAM -->
+                <div id="messagesList" class="max-w-3xl mx-auto py-6 space-y-6 hidden"></div>
+            </div>
+
+            <!-- FLOATING PILL COMPOSER (Bottom Input) -->
+            <div class="px-3 sm:px-6 pb-3 pt-1 shrink-0">
+                <div class="max-w-3xl mx-auto">
+                    
+                    <!-- Rounded Composer Box -->
+                    <div id="composerBox" class="bg-neutral-100 dark:bg-gpt-surface rounded-3xl border border-neutral-200/80 dark:border-white/10 px-3 py-2.5 shadow-lg transition">
+                        
+                        <!-- Attached Image Preview Thumbnail -->
+                        <div id="imageAttachmentPreview" class="hidden mb-2 px-1 flex items-center gap-3">
+                            <div class="relative group">
+                                <img id="attachedImageImg" src="" alt="Upload" class="w-14 h-14 object-cover rounded-xl border border-neutral-300 dark:border-white/15">
+                                <button onclick="clearImageAttachment()" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-neutral-900 text-white text-[10px] flex items-center justify-center shadow">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <span class="text-xs text-neutral-500 dark:text-neutral-400">Image attached for analysis</span>
+                        </div>
+
+                        <!-- Textarea -->
+                        <textarea id="chatInput" rows="1" placeholder="Ask anything or say 'Create an image of...'"
+                            onkeydown="handleComposerKeydown(event)"
+                            oninput="autoGrowTextarea(this)"
+                            class="w-full bg-transparent text-sm sm:text-[15px] text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:placeholder-neutral-400 focus:outline-none resize-none max-h-44 overflow-y-auto px-1.5 py-1"></textarea>
+
+                        <!-- Composer Bottom Toolbar -->
+                        <div class="flex items-center justify-between pt-1.5 flex-wrap gap-1">
+                            <div class="flex items-center gap-1 flex-wrap">
+                                <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleImageSelected(event)">
+                                
+                                <!-- Attach Image Button -->
+                                <button onclick="triggerImageSelect()" title="Upload photo to analyze" class="w-8 h-8 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700/60 text-neutral-500 dark:text-neutral-300 flex items-center justify-center transition">
+                                    <i class="fa-solid fa-plus text-sm"></i>
+                                </button>
+
+                                <!-- Create Image Mode Toggle Pill -->
+                                <button onclick="toggleImageGenMode()" id="imageModeBtn" title="Create AI Image" class="px-2.5 py-1 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300 text-xs flex items-center gap-1.5 transition border border-transparent">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-xs text-pink-500"></i>
+                                    <span>Image</span>
+                                </button>
+
+                                <!-- Aspect Ratio Selector (Visible when Image Mode is active) -->
+                                <select id="imageRatioSelect" onchange="state.imageAspectRatio = this.value" class="hidden bg-neutral-200/80 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 text-[11px] font-medium px-2 py-1 rounded-full border border-neutral-300 dark:border-white/10 focus:outline-none cursor-pointer">
+                                    <option value="1:1">1:1 Square</option>
+                                    <option value="16:9">16:9 Landscape</option>
+                                    <option value="9:16">9:16 Portrait</option>
+                                </select>
+
+                                <!-- Quick Web Builder Mode Toggle -->
+                                <button onclick="insertWebBuilderPrefix()" title="Build interactive website" class="px-2.5 py-1 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300 text-xs flex items-center gap-1.5 transition">
+                                    <i class="fa-solid fa-globe text-xs"></i>
+                                    <span class="hidden sm:inline">Canvas</span>
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-1.5">
+                                <!-- Voice Dictation Button -->
+                                <button onclick="toggleVoiceDictation()" id="micBtn" title="Voice input" class="w-8 h-8 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700/60 text-neutral-500 dark:text-neutral-300 flex items-center justify-center transition">
+                                    <i class="fa-solid fa-microphone text-sm"></i>
+                                </button>
+
+                                <!-- Stop Streaming Button -->
+                                <button onclick="stopStreaming()" id="stopStreamBtn" title="Stop generating" class="hidden w-8 h-8 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 items-center justify-center transition">
+                                    <i class="fa-solid fa-square text-xs"></i>
+                                </button>
+
+                                <!-- Send Button -->
+                                <button onclick="sendMessage()" id="sendMsgBtn" title="Send message" class="w-8 h-8 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:opacity-90 flex items-center justify-center transition disabled:opacity-40">
+                                    <i class="fa-solid fa-arrow-up text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-center text-neutral-400 dark:text-neutral-500 mt-2">
+                        AuraAI can answer questions, write code, and generate HD images directly in chat.
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <!-- SLIDE-OVER ARTIFACT / CANVAS DRAWER (For Live HTML Website Previews) -->
+        <aside id="canvasDrawer" class="fixed inset-y-0 right-0 z-50 w-full sm:w-[55%] lg:w-[50%] bg-white dark:bg-gpt-dark border-l border-neutral-200 dark:border-white/10 flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out shadow-2xl">
+            <div class="h-14 px-4 border-b border-neutral-200 dark:border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                    <h3 class="text-sm font-semibold">Canvas Live Preview</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="downloadCanvasHtml()" class="px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-gpt-surface hover:bg-neutral-200 dark:hover:bg-neutral-700 text-xs font-medium flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-download text-xs"></i>
+                        <span>Download</span>
+                    </button>
+                    <button onclick="closeCanvasDrawer()" class="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-gpt-surface transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <iframe id="canvasIframe" class="w-full flex-1 bg-white" sandbox="allow-scripts allow-modals"></iframe>
+        </aside>
+
+    </div>
+
+    <!-- CUSTOM INSTRUCTIONS / PERSONA MODAL -->
+    <div id="personaModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-gpt-surface w-full max-w-md rounded-2xl border border-neutral-200 dark:border-white/10 shadow-2xl overflow-hidden">
+            <div class="px-5 py-4 border-b border-neutral-200 dark:border-white/10 flex items-center justify-between">
+                <h3 class="text-sm font-semibold">Custom instructions</h3>
+                <button onclick="closePersonaModal()" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-300 mb-1.5">Choose Assistant Style</label>
+                    <select id="personaSelectInput" onchange="applyPresetPersona(this.value)" class="w-full bg-neutral-100 dark:bg-gpt-main border border-neutral-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs focus:outline-none">
+                        <option value="default">Default (Helpful, clear & natural)</option>
+                        <option value="coder">Full-Stack Developer (Clean code & web apps)</option>
+                        <option value="reasoning">Deep Thinker (Step-by-step analysis)</option>
+                        <option value="hinglish">Friendly Hinglish Companion</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-300 mb-1.5">How would you like AuraAI to respond?</label>
+                    <textarea id="customPromptTextarea" rows="4" class="w-full bg-neutral-100 dark:bg-gpt-main border border-neutral-200 dark:border-white/10 rounded-xl p-3 text-xs focus:outline-none" placeholder="e.g., Always explain concepts simply and provide runnable code examples..."></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button onclick="closePersonaModal()" class="px-4 py-2 rounded-xl text-xs font-medium hover:bg-neutral-100 dark:hover:bg-gpt-hover">Cancel</button>
+                    <button onclick="savePersonaSettings()" class="px-4 py-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULLSCREEN IMAGE LIGHTBOX MODAL -->
+    <div id="imageLightboxModal" onclick="closeImageLightbox()" class="fixed inset-0 z-[90] bg-black/90 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="relative max-w-4xl w-full flex flex-col items-center" onclick="event.stopPropagation()">
+            <div class="w-full flex items-center justify-between mb-3 px-2">
+                <span id="lightboxPromptText" class="text-xs text-neutral-300 truncate max-w-xl"></span>
+                <div class="flex items-center gap-2">
+                    <button id="lightboxDownloadBtn" class="px-3 py-1.5 rounded-xl bg-white text-neutral-900 text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download HD</span>
+                    </button>
+                    <button onclick="closeImageLightbox()" class="w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20 flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <img id="lightboxImg" src="" alt="Generated Image" class="max-h-[80vh] w-auto rounded-2xl shadow-2xl border border-white/10 object-contain">
+        </div>
+    </div>
+
+    <script>
+        /********************************************************************
+         * 1. SILENT DUAL-ENGINE CONFIGURATION (100% HIDDEN FROM UI)
+         ********************************************************************/
+        const OPENROUTER_API_KEY = "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";
+        const ONEOVER_API_KEY = "oo_live_c3794d11d7e5d9ef3162bd1d4defb190975b6f17f79716e1";
+
+        const CURATED_MODELS = [
+            { id: 'openrouter/free', label: 'Aura Pro', desc: 'Smart auto-routing for chat, code & image creation' },
+            { id: 'deepseek/deepseek-r1:free', label: 'DeepSeek R1', desc: 'Advanced reasoning & problem solving' },
+            { id: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B', desc: 'Fast, articulate & versatile' },
+            { id: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash', desc: 'Multimodal vision & high speed' },
+            { id: 'qwen/qwen-2.5-coder-32b-instruct:free', label: 'Qwen 2.5 Coder', desc: 'Specialized in programming & web apps' }
+        ];
+
+        const SILENT_FALLBACK_POOL = [
+            'openrouter/free',
+            'google/gemma-3-27b-it:free',
+            'meta-llama/llama-3.3-70b-instruct:free',
+            'deepseek/deepseek-chat-v3-0324:free',
+            'qwen/qwen-2.5-coder-32b-instruct:free',
+            'mistralai/mistral-small-3.1-24b-instruct:free',
+            'google/gemini-2.0-flash-exp:free'
+        ];
+
+        const PERSONA_PRESETS = {
+            default: "You are AuraAI, a sleek, intelligent, and helpful AI assistant. Respond naturally in the language the user uses (English, Hindi, or Hinglish). Format responses cleanly using Markdown. Whenever asked to build a website, UI, or game, provide a complete single-file HTML document with inline CSS/JS inside an ```html code block.",
+            coder: "You are an expert Full-Stack Software Engineer. Write clean, complete, production-ready code. When building web apps or UIs, output a single self-contained HTML file with Tailwind CSS so the user can preview it live.",
+            reasoning: "You are an analytical problem solver. Think step-by-step through logic, math, and strategy questions clearly and concisely.",
+            hinglish: "You are a warm, smart friend who speaks natural Hinglish (Hindi + English mix). Explain things clearly with relatable examples."
+        };
+
+        let state = {
+            selectedModel: localStorage.getItem('aura_clean_model') || 'openrouter/free',
+            selectedModelLabel: localStorage.getItem('aura_clean_model_label') || 'Aura Pro',
+            dynamicFreeModels: [],
+            chats: JSON.parse(localStorage.getItem('aura_clean_chats') || '[]'),
+            currentChatId: null,
+            attachedImage: null,
+            imageGenMode: false,
+            imageAspectRatio: '1:1',
+            abortController: null,
+            personaKey: localStorage.getItem('aura_clean_persona_key') || 'default',
+            systemInstruction: localStorage.getItem('aura_clean_sys_prompt') || PERSONA_PRESETS.default,
+            lastCanvasHtml: ''
+        };
+
+        /********************************************************************
+         * 2. INITIALIZATION
+         ********************************************************************/
+        window.addEventListener('DOMContentLoaded', () => {
+            marked.setOptions({ breaks: true, gfm: true });
+
+            // Restore theme
+            const savedTheme = localStorage.getItem('aura_clean_theme') || 'dark';
+            setTheme(savedTheme);
+
+            // Update model label
+            document.getElementById('selectedModelLabel').textContent = state.selectedModelLabel;
+            updatePersonaBadge();
+
+            // Initialize chat list
+            if (state.chats.length === 0) {
+                createNewChat(false);
+            } else {
+                state.currentChatId = state.chats[0].id;
+                renderChatHistorySidebar();
+                renderConversation();
+            }
+
+            renderModelPickerMenu();
+            syncLiveFreeModelsSilently();
+
+            // Close model dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('modelDropdownMenu');
+                const btn = document.getElementById('modelDropdownBtn');
+                if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                    menu.classList.add('hidden');
+                }
+            });
+        });
+
+        async function syncLiveFreeModelsSilently() {
+            try {
+                const res = await fetch('https://openrouter.ai/api/v1/models');
+                const json = await res.json();
+                if (json && Array.isArray(json.data)) {
+                    state.dynamicFreeModels = json.data.filter(m =>
+                        m.id.endsWith(':free') ||
+                        (m.pricing && parseFloat(m.pricing.prompt) === 0 && parseFloat(m.pricing.completion) === 0)
+                    );
+                    renderModelPickerMenu();
+                }
+            } catch (_) {
+                // Silent background sync
+            }
+        }
+
+        /********************************************************************
+         * 3. MODEL PICKER DROPDOWN
+         ********************************************************************/
+        function toggleModelDropdown(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('modelDropdownMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function renderModelPickerMenu() {
+            const curatedEl = document.getElementById('curatedModelsList');
+            curatedEl.innerHTML = CURATED_MODELS.map(m => {
+                const active = state.selectedModel === m.id;
+                return `
+                    <button onclick="chooseModel('${m.id}', '${m.label}')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-gpt-hover flex items-center justify-between transition">
+                        <div>
+                            <div class="text-xs font-semibold text-neutral-900 dark:text-white">${m.label}</div>
+                            <div class="text-[11px] text-neutral-500 dark:text-neutral-400">${m.desc}</div>
+                        </div>
+                        ${active ? '<i class="fa-solid fa-check text-xs text-neutral-900 dark:text-white"></i>' : ''}
+                    </button>
+                `;
+            }).join('');
+
+            const extraEl = document.getElementById('extraModelsList');
+            const curatedIds = new Set(CURATED_MODELS.map(c => c.id));
+            const extras = state.dynamicFreeModels.filter(m => !curatedIds.has(m.id)).slice(0, 25);
+
+            if (extras.length === 0) {
+                extraEl.innerHTML = `<div class="px-3 py-2 text-[11px] text-neutral-400">Auto-synced ready</div>`;
+                return;
+            }
+
+            extraEl.innerHTML = extras.map(m => {
+                const cleanName = (m.name || m.id).replace(/\s*\(free\)\s*/ig, '').trim();
+                const safeName = cleanName.replace(/'/g, "\\'");
+                const active = state.selectedModel === m.id;
+                return `
+                    <button onclick="chooseModel('${m.id}', '${safeName}')" class="w-full text-left px-3 py-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-gpt-hover flex items-center justify-between transition">
+                        <span class="text-xs text-neutral-700 dark:text-neutral-200 truncate pr-2">${cleanName}</span>
+                        ${active ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function chooseModel(id, label) {
+            state.selectedModel = id;
+            state.selectedModelLabel = label;
+            localStorage.setItem('aura_clean_model', id);
+            localStorage.setItem('aura_clean_model_label', label);
+            document.getElementById('selectedModelLabel').textContent = label;
+            document.getElementById('modelDropdownMenu').classList.add('hidden');
+            renderModelPickerMenu();
+        }
+
+        /********************************************************************
+         * 4. UNIFIED CHAT + IN-CHAT AI IMAGE GENERATION PIPELINE
+         ********************************************************************/
+        function isImageGenerationIntent(text) {
+            if (state.imageGenMode) return true;
+            if (state.attachedImage) return false;
+            const lower = text.toLowerCase().trim();
+            // Do not trigger image gen if user is asking for code/website
+            if (/\b(html|css|javascript|website|web app|code|python|react|script|program)\b/i.test(lower)) {
+                return false;
+            }
+            const patterns = [
+                /\b(generate|create|draw|make|paint|render|design)\b.{0,30}\b(image|photo|picture|pic|art|wallpaper|logo|poster|illustration|portrait|avatar|sketch)\b/i,
+                /\b(image|photo|picture|pic|tasveer|wallpapers?|logo|poster|painting|sketch)\b.{0,30}\b(banao|bana do|banaye|bana|dikhao|generate|create|draw|make)\b/i,
+                /^(draw|paint|generate image|create image|imagine)\b/i,
+                /\b(ki photo|ka photo|ki tasveer|ki image|ka image|ki pic)\b/i
+            ];
+            return patterns.some(rx => rx.test(lower));
+        }
+
+        function toggleImageGenMode(forceState = null) {
+            state.imageGenMode = forceState !== null ? forceState : !state.imageGenMode;
+            const btn = document.getElementById('imageModeBtn');
+            const ratioSelect = document.getElementById('imageRatioSelect');
+            const input = document.getElementById('chatInput');
+
+            if (state.imageGenMode) {
+                btn.classList.add('bg-pink-500/15', 'text-pink-600', 'dark:text-pink-300', 'border-pink-500/30');
+                ratioSelect.classList.remove('hidden');
+                input.placeholder = "Describe the image you want to create (e.g., 'Ek futuristic flying car in Mumbai')...";
+                input.focus();
+            } else {
+                btn.classList.remove('bg-pink-500/15', 'text-pink-600', 'dark:text-pink-300', 'border-pink-500/30');
+                ratioSelect.classList.add('hidden');
+                input.placeholder = "Ask anything or say 'Create an image of...'";
+            }
+        }
+
+        function runQuickImagePrompt(promptText) {
+            toggleImageGenMode(true);
+            sendMessage(promptText);
+        }
+
+        async function sendMessage(overrideText = null) {
+            const input = document.getElementById('chatInput');
+            const text = (overrideText !== null ? overrideText : input.value).trim();
+            if (!text && !state.attachedImage) return;
+
+            const chat = getCurrentChat();
+            if (!chat) return;
+
+            const wantsImage = isImageGenerationIntent(text);
+            const activeRatio = state.imageAspectRatio || '1:1';
+
+            // Add user message
+            chat.messages.push({
+                role: 'user',
+                content: text || 'Describe and analyze this image.',
+                image: state.attachedImage || null
+            });
+
+            if (chat.title === 'New chat' && text) {
+                chat.title = text.slice(0, 36) + (text.length > 36 ? '...' : '');
+            }
+
+            input.value = '';
+            input.style.height = 'auto';
+            clearImageAttachment();
+            if (state.imageGenMode) toggleImageGenMode(false);
+
+            saveChats();
+            renderChatHistorySidebar();
+            renderConversation();
+
+            if (wantsImage) {
+                await generateImageInChat(chat, text, activeRatio);
+            } else {
+                await generateAssistantReply(chat);
+            }
+        }
+
+        function getDimensionsForRatio(ratio) {
+            if (ratio === '16:9') return { w: 1280, h: 720 };
+            if (ratio === '9:16') return { w: 720, h: 1280 };
+            return { w: 1024, h: 1024 };
+        }
+
+        async function generateImageInChat(chat, userPrompt, ratio = '1:1') {
+            const aiIndex = chat.messages.length;
+            chat.messages.push({
+                role: 'assistant',
+                content: '',
+                isGeneratingImage: true,
+                imagePrompt: userPrompt,
+                aspectRatio: ratio
+            });
+            renderConversation();
+            setStreamingUI(true);
+
+            // Step 1: Enhance user prompt using OpenRouter LLM for studio-grade visuals
+            let enhancedPrompt = userPrompt;
+            let friendlyCaption = `Here is your generated image for **"${userPrompt}"**:`;
+
+            try {
+                const enhancerRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': window.location.origin || 'https://aura.ai',
+                        'X-Title': 'AuraAI'
+                    },
+                    body: JSON.stringify({
+                        model: 'openrouter/free',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'You are an expert AI visual prompt engineer. Convert the user request (which may be in Hindi, Hinglish, or English) into a vivid, detailed, photorealistic, high-resolution English image generation prompt (max 45 words). Output ONLY the English visual prompt, with no quotes or extra explanation.'
+                            },
+                            { role: 'user', content: userPrompt }
+                        ]
+                    })
+                });
+                if (enhancerRes.ok) {
+                    const data = await enhancerRes.json();
+                    const candidate = data.choices?.[0]?.message?.content?.trim();
+                    if (candidate && candidate.length > 8) {
+                        enhancedPrompt = candidate.replace(/^["']|["']$/g, '');
+                    }
+                }
+            } catch (_) {
+                // Keep original prompt if enhancer is skipped
+            }
+
+            // Step 2: Attempt OneOver Image API + Guaranteed Flux HD Multi-Engine Pipeline
+            const { w, h } = getDimensionsForRatio(ratio);
+            const seed = Math.floor(Math.random() * 9999999);
+            let finalImageUrl = null;
+
+            try {
+                const ooRes = await fetch('https://api.oneover.com/functions/v1/api-v1-images', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${ONEOVER_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: enhancedPrompt,
+                        aspect_ratio: ratio,
+                        width: w,
+                        height: h
+                    })
+                });
+                if (ooRes.ok) {
+                    const ooJson = await ooRes.json();
+                    const candidateUrl =
+                        ooJson.url ||
+                        ooJson.image_url ||
+                        ooJson.data?.[0]?.url ||
+                        ooJson.images?.[0]?.url ||
+                        ooJson.images?.[0] ||
+                        ooJson.asset?.url ||
+                        (ooJson.b64_json ? `data:image/png;base64,${ooJson.b64_json}` : null);
+                    if (candidateUrl && typeof candidateUrl === 'string') {
+                        finalImageUrl = candidateUrl;
+                    }
+                }
+            } catch (_) {
+                // Proceed seamlessly to Flux HD Engine
+            }
+
+            if (!finalImageUrl) {
+                finalImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=${w}&height=${h}&seed=${seed}&nologo=true&model=flux`;
+            }
+
+            // Preload image to guarantee smooth visual reveal
+            await new Promise((resolve) => {
+                const img = new Image();
+                const timer = setTimeout(resolve, 12000);
+                img.onload = () => { clearTimeout(timer); resolve(); };
+                img.onerror = () => {
+                    clearTimeout(timer);
+                    // Secondary fallback stream
+                    finalImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(userPrompt)}?width=${w}&height=${h}&seed=${seed + 7}&nologo=true`;
+                    resolve();
+                };
+                img.src = finalImageUrl;
+            });
+
+            chat.messages[aiIndex] = {
+                role: 'assistant',
+                content: friendlyCaption,
+                generatedImage: finalImageUrl,
+                imagePrompt: enhancedPrompt,
+                originalUserPrompt: userPrompt,
+                aspectRatio: ratio,
+                isGeneratingImage: false
+            };
+
+            saveChats();
+            setStreamingUI(false);
+            renderConversation();
+        }
+
+        async function regenerateImageVariation(msgIndex) {
+            const chat = getCurrentChat();
+            if (!chat || !chat.messages[msgIndex]) return;
+            const msg = chat.messages[msgIndex];
+            const promptToUse = msg.originalUserPrompt || msg.imagePrompt || 'Futuristic artwork';
+            const ratio = msg.aspectRatio || '1:1';
+
+            msg.isGeneratingImage = true;
+            renderConversation();
+
+            const { w, h } = getDimensionsForRatio(ratio);
+            const newSeed = Math.floor(Math.random() * 9999999);
+            const prompt = msg.imagePrompt || promptToUse;
+            const newUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${w}&height=${h}&seed=${newSeed}&nologo=true&model=flux`;
+
+            await new Promise((resolve) => {
+                const img = new Image();
+                const timer = setTimeout(resolve, 10000);
+                img.onload = () => { clearTimeout(timer); resolve(); };
+                img.onerror = () => { clearTimeout(timer); resolve(); };
+                img.src = newUrl;
+            });
+
+            msg.generatedImage = newUrl;
+            msg.isGeneratingImage = false;
+            saveChats();
+            renderConversation();
+            showToast('Generated new image variation');
+        }
+
+        async function generateAssistantReply(chat) {
+            const aiIndex = chat.messages.length;
+            chat.messages.push({
+                role: 'assistant',
+                content: ''
+            });
+            renderConversation();
+            setStreamingUI(true);
+
+            // Build seamless priority queue so user never hits rate-limit walls
+            const queue = [state.selectedModel];
+            SILENT_FALLBACK_POOL.forEach(m => {
+                if (!queue.includes(m)) queue.push(m);
+            });
+            state.dynamicFreeModels.slice(0, 6).forEach(m => {
+                if (!queue.includes(m.id)) queue.push(m.id);
+            });
+
+            let completed = false;
+            for (let i = 0; i < queue.length; i++) {
+                const candidate = queue[i];
+                try {
+                    await streamCompletion(candidate, chat.messages.slice(0, -1), aiIndex);
+                    completed = true;
+                    break;
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        completed = true;
+                        break;
+                    }
+                    // Silently try next model in queue
+                }
+            }
+
+            // Secondary fallback via OneOver Chat API if needed
+            if (!completed) {
+                try {
+                    const lastUserMsg = chat.messages[chat.messages.length - 2]?.content || '';
+                    const ooChat = await fetch('https://api.oneover.com/functions/v1/api-v1-chat', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${ONEOVER_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            messages: [
+                                { role: 'system', content: state.systemInstruction },
+                                { role: 'user', content: lastUserMsg }
+                            ]
+                        })
+                    });
+                    if (ooChat.ok) {
+                        const ooData = await ooChat.json();
+                        const replyText = ooData.choices?.[0]?.message?.content || ooData.text || ooData.response;
+                        if (replyText) {
+                            chat.messages[aiIndex].content = replyText;
+                            completed = true;
+                        }
+                    }
+                } catch (_) {}
+            }
+
+            if (!completed) {
+                chat.messages[aiIndex].content = "I'm experiencing high traffic right now. Please try sending your message again in a moment.";
+                renderConversation();
+            }
+
+            saveChats();
+            setStreamingUI(false);
+        }
+
+        async function streamCompletion(modelId, contextMessages, aiIndex) {
+            state.abortController = new AbortController();
+
+            const payloadMessages = [
+                { role: 'system', content: state.systemInstruction }
+            ];
+
+            contextMessages.forEach(m => {
+                if (m.image) {
+                    payloadMessages.push({
+                        role: m.role,
+                        content: [
+                            { type: 'text', text: m.content },
+                            { type: 'image_url', image_url: { url: m.image } }
+                        ]
+                    });
+                } else {
+                    payloadMessages.push({
+                        role: m.role,
+                        content: m.content
+                    });
+                }
+            });
+
+            const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                signal: state.abortController.signal,
+                headers: {
+                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': window.location.origin || 'https://aura.ai',
+                    'X-Title': 'AuraAI'
+                },
+                body: JSON.stringify({
+                    model: modelId,
+                    messages: payloadMessages,
+                    stream: true
+                })
+            });
+
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let accumulated = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed.startsWith('data: ')) continue;
+                    const dataStr = trimmed.slice(6).trim();
+                    if (dataStr === '[DONE]') break;
+
+                    try {
+                        const parsed = JSON.parse(dataStr);
+                        if (parsed.error) throw new Error(parsed.error.message);
+                        const token = parsed.choices?.[0]?.delta?.content || '';
+                        if (token) {
+                            accumulated += token;
+                            updateLiveAssistantMessage(aiIndex, accumulated);
+                        }
+                    } catch (e) {
+                        if (e.message && !e.message.includes('JSON')) throw e;
+                    }
+                }
+            }
+
+            if (!accumulated.trim()) {
+                throw new Error('Empty stream');
+            }
+        }
+
+        function updateLiveAssistantMessage(msgIndex, text) {
+            const chat = getCurrentChat();
+            if (!chat || !chat.messages[msgIndex]) return;
+            chat.messages[msgIndex].content = text;
+
+            const el = document.getElementById(`ai-prose-${msgIndex}`);
+            if (el) {
+                el.innerHTML = formatMarkdownContent(text);
+            }
+            scrollToBottom();
+        }
+
+        function stopStreaming() {
+            if (state.abortController) {
+                state.abortController.abort();
+                state.abortController = null;
+            }
+            setStreamingUI(false);
+        }
+
+        function setStreamingUI(streaming) {
+            const sendBtn = document.getElementById('sendMsgBtn');
+            const stopBtn = document.getElementById('stopStreamBtn');
+            if (streaming) {
+                sendBtn.classList.add('hidden');
+                stopBtn.classList.remove('hidden');
+                stopBtn.classList.add('flex');
+            } else {
+                sendBtn.classList.remove('hidden');
+                stopBtn.classList.add('hidden');
+                stopBtn.classList.remove('flex');
+                renderConversation();
+            }
+        }
+
+        /********************************************************************
+         * 5. RENDERING MESSAGES, CODE BLOCKS & CANVAS ARTIFACT PREVIEW
+         ********************************************************************/
+        function formatMarkdownContent(md) {
+            const html = marked.parse(md || '');
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+
+            temp.querySelectorAll('pre code').forEach((block) => {
+                const rawCode = block.textContent;
+                const langClass = Array.from(block.classList).find(c => c.startsWith('language-')) || '';
+                const lang = langClass.replace('language-', '') || 'code';
+                const isRunnableHtml = lang === 'html' || rawCode.includes('<!DOCTYPE html>') || rawCode.includes('<html');
+
+                const pre = block.parentElement;
+                const bar = document.createElement('div');
+                bar.className = 'flex items-center justify-between px-4 py-2 bg-[#1a1a1a] text-neutral-400 text-xs font-sans border-b border-white/5';
+
+                const encoded = encodeURIComponent(rawCode);
+                bar.innerHTML = `
+                    <span class="font-mono text-[11px] lowercase">${lang}</span>
+                    <div class="flex items-center gap-3">
+                        ${isRunnableHtml ? `
+                            <button onclick="openCanvasPreview('${encoded}')" class="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-medium transition">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                                <span>Preview Website</span>
+                            </button>
+                        ` : ''}
+                        <button onclick="copyCodeSnippet('${encoded}', this)" class="flex items-center gap-1.5 hover:text-white transition">
+                            <i class="fa-regular fa-copy text-[11px]"></i>
+                            <span>Copy code</span>
+                        </button>
+                    </div>
+                `;
+                pre.prepend(bar);
+                hljs.highlightElement(block);
+            });
+
+            return temp.innerHTML;
+        }
+
+        function renderConversation() {
+            const chat = getCurrentChat();
+            const welcomeEl = document.getElementById('welcomeScreen');
+            const listEl = document.getElementById('messagesList');
+
+            if (!chat || chat.messages.length === 0) {
+                welcomeEl.classList.remove('hidden');
+                listEl.classList.add('hidden');
+                listEl.innerHTML = '';
+                return;
+            }
+
+            welcomeEl.classList.add('hidden');
+            listEl.classList.remove('hidden');
+
+            listEl.innerHTML = chat.messages.map((m, idx) => {
+                if (m.role === 'user') {
+                    return `
+                        <div class="flex justify-end group">
+                            <div class="max-w-[85%] sm:max-w-[75%] flex flex-col items-end">
+                                ${m.image ? `<img src="${m.image}" class="max-h-56 rounded-2xl mb-2 border border-neutral-200 dark:border-white/10">` : ''}
+                                <div class="rounded-3xl bg-neutral-100 dark:bg-gpt-surface text-neutral-900 dark:text-neutral-100 px-4 py-2.5 text-sm sm:text-[15px] leading-relaxed whitespace-pre-wrap">${escapeHtml(m.content)}</div>
+                                <button onclick="editUserMessage(${idx})" title="Edit message" class="opacity-0 group-hover:opacity-100 mt-1 px-2 py-0.5 text-[11px] text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition">
+                                    <i class="fa-solid fa-pen text-[10px]"></i> Edit
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const encodedImgUrl = m.generatedImage ? encodeURIComponent(m.generatedImage) : '';
+                    const encodedPrompt = m.imagePrompt ? encodeURIComponent(m.imagePrompt) : '';
+
+                    return `
+                        <div class="flex items-start gap-3.5 group">
+                            <div class="w-7 h-7 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                                <i class="fa-solid fa-sparkles text-[11px]"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                ${m.isGeneratingImage ? `
+                                    <div class="max-w-md rounded-2xl overflow-hidden border border-neutral-200 dark:border-white/10 p-4 img-gen-shimmer text-white shadow-lg">
+                                        <div class="flex items-center gap-2.5 mb-3">
+                                            <i class="fa-solid fa-wand-magic-sparkles text-pink-400 animate-spin"></i>
+                                            <span class="text-xs font-medium tracking-wide">Creating your HD image...</span>
+                                        </div>
+                                        <div class="h-52 w-full rounded-xl bg-white/5 flex items-center justify-center">
+                                            <span class="text-[11px] text-neutral-400 px-4 text-center line-clamp-2">"${escapeHtml(m.imagePrompt || '')}"</span>
+                                        </div>
+                                    </div>
+                                ` : `
+                                    <div id="ai-prose-${idx}" class="prose-aura text-neutral-800 dark:text-neutral-100">
+                                        ${m.content ? formatMarkdownContent(m.content) : '<span class="inline-block w-2.5 h-2.5 rounded-full bg-neutral-400 dark:bg-neutral-300 thinking-dot"></span>'}
+                                    </div>
+                                    ${m.generatedImage ? `
+                                        <div class="mt-3 max-w-md rounded-2xl overflow-hidden border border-neutral-200 dark:border-white/10 bg-neutral-950 shadow-xl group/img relative">
+                                            <img src="${m.generatedImage}" alt="${escapeHtml(m.imagePrompt || 'AI Image')}"
+                                                onclick="openImageLightbox('${encodedImgUrl}', '${encodedPrompt}')"
+                                                class="w-full h-auto max-h-[420px] object-cover cursor-zoom-in transition duration-300 group-hover/img:scale-[1.01]">
+                                            <div class="flex items-center justify-between px-3 py-2 bg-neutral-900/95 text-neutral-200 text-xs border-t border-white/10">
+                                                <div class="flex items-center gap-2">
+                                                    <button onclick="downloadGeneratedImage('${encodedImgUrl}')" class="px-2.5 py-1 rounded-lg bg-white text-neutral-900 font-semibold hover:opacity-90 flex items-center gap-1.5 transition">
+                                                        <i class="fa-solid fa-download text-[10px]"></i>
+                                                        <span>Download</span>
+                                                    </button>
+                                                    <button onclick="regenerateImageVariation(${idx})" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition">
+                                                        <i class="fa-solid fa-rotate text-[10px]"></i>
+                                                        <span>New variation</span>
+                                                    </button>
+                                                </div>
+                                                <div class="flex items-center gap-1">
+                                                    <button onclick="copyPromptText('${encodedPrompt}')" title="Copy enhanced prompt" class="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 transition">
+                                                        <i class="fa-regular fa-copy text-xs"></i>
+                                                    </button>
+                                                    <button onclick="openImageLightbox('${encodedImgUrl}', '${encodedPrompt}')" title="Full screen" class="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 transition">
+                                                        <i class="fa-solid fa-expand text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                `}
+                                ${m.content && !m.isGeneratingImage ? `
+                                    <div class="flex items-center gap-1 mt-2 text-neutral-400">
+                                        <button onclick="copyAssistantMessage(${idx})" title="Copy" class="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-gpt-surface hover:text-neutral-700 dark:hover:text-neutral-200 transition">
+                                            <i class="fa-regular fa-copy text-xs"></i>
+                                        </button>
+                                        <button onclick="readMessageAloud(${idx})" title="Read aloud" class="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-gpt-surface hover:text-neutral-700 dark:hover:text-neutral-200 transition">
+                                            <i class="fa-solid fa-volume-high text-xs"></i>
+                                        </button>
+                                        <button onclick="regenerateReply(${idx})" title="Regenerate response" class="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-gpt-surface hover:text-neutral-700 dark:hover:text-neutral-200 transition">
+                                            <i class="fa-solid fa-rotate-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatScrollContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Message Actions
+        function copyCodeSnippet(encoded, btn) {
+            const code = decodeURIComponent(encoded);
+            copyToClipboard(code);
+            const original = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-check text-[11px]"></i><span>Copied!</span>`;
+            setTimeout(() => btn.innerHTML = original, 1800);
+        }
+
+        function copyAssistantMessage(idx) {
+            const chat = getCurrentChat();
+            if (!chat || !chat.messages[idx]) return;
+            copyToClipboard(chat.messages[idx].content);
+            showToast('Copied to clipboard');
+        }
+
+        function regenerateReply(idx) {
+            const chat = getCurrentChat();
+            if (!chat || !chat.messages[idx]) return;
+            if (chat.messages[idx].generatedImage) {
+                regenerateImageVariation(idx);
+                return;
+            }
+            chat.messages = chat.messages.slice(0, idx);
+            saveChats();
+            renderConversation();
+            generateAssistantReply(chat);
+        }
+
+        function copyPromptText(encodedPrompt) {
+            const text = decodeURIComponent(encodedPrompt || '');
+            copyToClipboard(text);
+            showToast('Image prompt copied');
+        }
+
+        async function downloadGeneratedImage(encodedUrl) {
+            const url = decodeURIComponent(encodedUrl);
+            showToast('Downloading HD image...');
+            try {
+                const res = await fetch(url);
+                const blob = await res.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = `aura-ai-${Date.now()}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(blobUrl);
+            } catch (_) {
+                window.open(url, '_blank');
+            }
+        }
+
+        function openImageLightbox(encodedUrl, encodedPrompt) {
+            const url = decodeURIComponent(encodedUrl);
+            const prompt = decodeURIComponent(encodedPrompt || '');
+            document.getElementById('lightboxImg').src = url;
+            document.getElementById('lightboxPromptText').textContent = prompt;
+            document.getElementById('lightboxDownloadBtn').onclick = () => downloadGeneratedImage(encodedUrl);
+            const modal = document.getElementById('imageLightboxModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeImageLightbox() {
+            const modal = document.getElementById('imageLightboxModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function editUserMessage(idx) {
+            const chat = getCurrentChat();
+            if (!chat || !chat.messages[idx]) return;
+            const input = document.getElementById('chatInput');
+            input.value = chat.messages[idx].content;
+            autoGrowTextarea(input);
+            input.focus();
+            chat.messages = chat.messages.slice(0, idx);
+            saveChats();
+            renderConversation();
+        }
+
+        function readMessageAloud(idx) {
+            const chat = getCurrentChat();
+            if (!chat || !chat.messages[idx] || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const plain = chat.messages[idx].content.replace(/[#*`~_]/g, '');
+            const utter = new SpeechSynthesisUtterance(plain.slice(0, 700));
+            utter.lang = 'hi-IN';
+            window.speechSynthesis.speak(utter);
+        }
+
+        // Slide-over Canvas Drawer
+        function openCanvasPreview(encodedHtml) {
+            const code = decodeURIComponent(encodedHtml);
+            state.lastCanvasHtml = code;
+            const drawer = document.getElementById('canvasDrawer');
+            const iframe = document.getElementById('canvasIframe');
+            iframe.srcdoc = code;
+            drawer.classList.remove('translate-x-full');
+        }
+
+        function closeCanvasDrawer() {
+            const drawer = document.getElementById('canvasDrawer');
+            drawer.classList.add('translate-x-full');
+            document.getElementById('canvasIframe').srcdoc = '';
+        }
+
+        function downloadCanvasHtml() {
+            if (!state.lastCanvasHtml) return;
+            const blob = new Blob([state.lastCanvasHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        /********************************************************************
+         * 6. VISION ATTACHMENT, VOICE DICTATION & COMPOSER HELPERS
+         ********************************************************************/
+        function triggerImageSelect() {
+            document.getElementById('imageFileInput').click();
+        }
+
+        function handleImageSelected(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                state.attachedImage = ev.target.result;
+                document.getElementById('attachedImageImg').src = state.attachedImage;
+                document.getElementById('imageAttachmentPreview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImageAttachment() {
+            state.attachedImage = null;
+            document.getElementById('imageFileInput').value = '';
+            document.getElementById('imageAttachmentPreview').classList.add('hidden');
+        }
+
+        function insertWebBuilderPrefix() {
+            const input = document.getElementById('chatInput');
+            if (!input.value.trim()) {
+                input.value = "Build a complete, modern single-file HTML website for ";
+            }
+            input.focus();
+            autoGrowTextarea(input);
+        }
+
+        function runQuickPrompt(text) {
+            sendMessage(text);
+        }
+
+        // Voice Dictation
+        let recognition = null;
+        let recording = false;
+
+        function toggleVoiceDictation() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                showToast('Voice dictation requires Chrome or Edge');
+                return;
+            }
+            const btn = document.getElementById('micBtn');
+            if (recording && recognition) {
+                recognition.stop();
+                return;
+            }
+            recognition = new SR();
+            recognition.lang = 'hi-IN';
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                recording = true;
+                btn.classList.add('text-rose-500', 'bg-rose-500/10');
+                showToast('Listening...');
+            };
+            recognition.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                const input = document.getElementById('chatInput');
+                input.value = (input.value ? input.value + ' ' : '') + text;
+                autoGrowTextarea(input);
+            };
+            recognition.onend = () => {
+                recording = false;
+                btn.classList.remove('text-rose-500', 'bg-rose-500/10');
+            };
+            recognition.start();
+        }
+
+        /********************************************************************
+         * 7. SIDEBAR HISTORY, THEME & CUSTOM INSTRUCTIONS
+         ********************************************************************/
+        function getCurrentChat() {
+            return state.chats.find(c => c.id === state.currentChatId);
+        }
+
+        function createNewChat(closeMobile = true) {
+            const current = getCurrentChat();
+            if (current && current.messages.length === 0) {
+                if (closeMobile) toggleSidebar(false);
+                return;
+            }
+            const chat = {
+                id: 'c_' + Date.now(),
+                title: 'New chat',
+                messages: []
+            };
+            state.chats.unshift(chat);
+            state.currentChatId = chat.id;
+            saveChats();
+            renderChatHistorySidebar();
+            renderConversation();
+            if (closeMobile) toggleSidebar(false);
+        }
+
+        function selectChatSession(id) {
+            state.currentChatId = id;
+            renderChatHistorySidebar();
+            renderConversation();
+            toggleSidebar(false);
+        }
+
+        function deleteChatSession(id, e) {
+            e.stopPropagation();
+            state.chats = state.chats.filter(c => c.id !== id);
+            if (state.chats.length === 0) {
+                createNewChat(false);
+            } else if (state.currentChatId === id) {
+                state.currentChatId = state.chats[0].id;
+            }
+            saveChats();
+            renderChatHistorySidebar();
+            renderConversation();
+        }
+
+        function saveChats() {
+            localStorage.setItem('aura_clean_chats', JSON.stringify(state.chats.slice(0, 40)));
+        }
+
+        function renderChatHistorySidebar() {
+            const query = (document.getElementById('chatSearchInput')?.value || '').toLowerCase();
+            const listEl = document.getElementById('chatHistoryList');
+
+            const filtered = state.chats.filter(c => c.title.toLowerCase().includes(query));
+            listEl.innerHTML = filtered.map(c => {
+                const active = c.id === state.currentChatId;
+                return `
+                    <div onclick="selectChatSession('${c.id}')" class="group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition ${active ? 'bg-neutral-200/80 dark:bg-gpt-surface text-neutral-900 dark:text-white font-medium' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-gpt-hover'}">
+                        <span class="truncate pr-2">${escapeHtml(c.title)}</span>
+                        <button onclick="deleteChatSession('${c.id}', event)" class="opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-rose-500 p-0.5 transition">
+                            <i class="fa-regular fa-trash-can text-[11px]"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            setTheme(isDark ? 'light' : 'dark');
+        }
+
+        function setTheme(mode) {
+            const btn = document.getElementById('themeToggleBtn');
+            if (mode === 'dark') {
+                document.documentElement.classList.add('dark');
+                btn.textContent = 'Dark';
+            } else {
+                document.documentElement.classList.remove('dark');
+                btn.textContent = 'Light';
+            }
+            localStorage.setItem('aura_clean_theme', mode);
+        }
+
+        // Custom Instructions Modal
+        function openPersonaModal() {
+            document.getElementById('personaSelectInput').value = state.personaKey;
+            document.getElementById('customPromptTextarea').value = state.systemInstruction;
+            const modal = document.getElementById('personaModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closePersonaModal() {
+            const modal = document.getElementById('personaModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function applyPresetPersona(key) {
+            state.personaKey = key;
+            document.getElementById('customPromptTextarea').value = PERSONA_PRESETS[key] || PERSONA_PRESETS.default;
+        }
+
+        function savePersonaSettings() {
+            const key = document.getElementById('personaSelectInput').value;
+            const text = document.getElementById('customPromptTextarea').value.trim() || PERSONA_PRESETS.default;
+            state.personaKey = key;
+            state.systemInstruction = text;
+            localStorage.setItem('aura_clean_persona_key', key);
+            localStorage.setItem('aura_clean_sys_prompt', text);
+            updatePersonaBadge();
+            closePersonaModal();
+            showToast('Custom instructions saved');
+        }
+
+        function updatePersonaBadge() {
+            const names = { default: 'Default', coder: 'Developer', reasoning: 'Reasoner', hinglish: 'Hinglish' };
+            document.getElementById('activePersonaBadge').textContent = names[state.personaKey] || 'Custom';
+        }
+
+        // UI Helpers
+        function toggleSidebar(show) {
+            const sb = document.getElementById('sidebar');
+            const bd = document.getElementById('sidebarBackdrop');
+            if (show) {
+                sb.classList.remove('-translate-x-full');
+                bd.classList.remove('hidden');
+            } else {
+                sb.classList.add('-translate-x-full');
+                bd.classList.add('hidden');
+            }
+        }
+
+        function autoGrowTextarea(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+        }
+
+        function handleComposerKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 640) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function copyToClipboard(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = 'px-3.5 py-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-medium shadow-lg transition-opacity duration-200';
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 200);
+            }, 2200);
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+        }
+    </script>
+</body>
+</html>
+```
